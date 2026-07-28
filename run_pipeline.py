@@ -17,17 +17,21 @@ VIS_DIR = os.path.join(BASE_DIR, "outputs/visualizations")
 CSV_DESTINATION = os.path.join(OUTPUT_DIR, "gretil_somatic_density.csv")
 IMG_DESTINATION = os.path.join(VIS_DIR, "somatic_overlap_matrix.png")
 
+# EXPANDED LEXICON ARRAY
 SOMATIC_LEXICON = {
     "postural_contortion": ["āsana", "pīṭha", "dārdura", "vṛścika", "tarakṣu", "padma", "śalabh"],
     "apparatus_pole": ["vaṃśa", "stambha", "khām", "gaṇe", "stamba", "veṇu"],
-    "occult_magic": ["indrajāla", "jāḍū", "camatkāra", "abhicāra", "mohana", "vismaya", "sādhana", "kārmaṇa"],
     "subaltern_tribal": ["caṇḍāla", "ḍomba", "naṭa", "plavaka", "jambhaka", "kollāṭ", "śailūṣa", "bāhirika"],
-    "necromancy_mortuary": ["aṭṭhi", "dhovana", "śmaśāna", "pūti", "bhūta", "kāpālika"]
+    "poison_necromancy": ["viṣa", "gara", "māraṇa", "śmaśāna", "vetāla", "kāpālika", "bhūta", "pūti", "śava"],
+    "sorcery_magic": ["indrajāla", "jāḍū", "camatkāra", "abhicāra", "mohana", "vismaya", "sādhana", "māyā", "kuhaka", "gāruḍa"],
+    "espionage_subversion": ["gūḍhapuruṣa", "cara", "spāśa", "satrin", "tikṣṇa", "rasada", "bhikṣukī", "chadman", "kāpāṭika"],
+    "climbing_leaping": ["ārohaṇa", "langhana", "plavana", "utpatana", "skandhana", "kūrdana"],
+    "caravan_trade_transit": ["sārthavāha", "vaṇij", "paṇya", "vipṇi", "patha", "mārga", "śulka", "saṃvāha", "deśāntara"]
 }
 
 MASTER_PATTERNS = {cat: re.compile("|".join(words), re.IGNORECASE) for cat, words in SOMATIC_LEXICON.items()}
 
-# 2. AUTOMATED DCS INGESTION (DYNAMIC STRING BUILDING TO PREVENT CLIPPING)
+# 2. AUTOMATED DCS INGESTION
 def sync_dcs_nodes():
     os.makedirs(DCS_DIR, exist_ok=True)
     if len(os.listdir(DCS_DIR)) == 0:
@@ -61,7 +65,7 @@ def sync_dcs_nodes():
     else:
         print("[*] Verified local DCS data nodes. Skipping asset download loop.")
 
-# 3. FAST TEXT MINING AND PARSING ENGINE
+# 3. HIGH-SPEED PARALLEL SCANNER
 def clean_manuscript(text):
     cleaned = re.sub(r'<.*?>', '', text)
     if "THE TEXT:" in cleaned:
@@ -84,7 +88,6 @@ def process_single_file(file_path):
             if line.startswith('#') or not line.strip():
                 continue
             parts = line.split('\t')
-            # Extract position index 2, which contains the string lemma form explicitly
             if len(parts) > 2:
                 lemma_string = parts[2].strip()
                 if lemma_string:
@@ -125,43 +128,57 @@ def run_parallel_text_mining():
     df.to_csv(CSV_DESTINATION, index=False)
     print(f"[+] Consolidated database table updated at: {CSV_DESTINATION}")
 
-# 4. TWO-COLOR SCATTER GRAPH VISUALIZATION
+# 4. COMPREHENSIVE MULTI-DIMENSIONAL ACADEMIC SCATTER PLOT
 def generate_academic_plot():
     if not os.path.exists(CSV_DESTINATION):
         return
     df = pd.read_csv(CSV_DESTINATION)
-    overlap_df = df[(df['subaltern_tribal_raw_count'] > 0) & (df['postural_contortion_raw_count'] > 0)]
+    
+    # Establish a complex research axis score combining transit, trade, climbing, and espionage
+    df['subversive_mobility_score'] = (
+        df['caravan_trade_transit_density_10k'] + 
+        df['espionage_subversion_density_10k'] + 
+        df['climbing_leaping_density_10k']
+    )
+    df['somatic_contortion_score'] = (
+        df['postural_contortion_density_10k'] + 
+        df['apparatus_pole_density_10k']
+    )
+    
+    overlap_df = df[(df['subversive_mobility_score'] > 0) & (df['somatic_contortion_score'] > 0)]
     if overlap_df.empty:
         print("[!] No active text overlaps identified for plot generation.")
         return
 
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-    fig, ax = plt.subplots(figsize=(12, 8), dpi=300)
+    fig, ax = plt.subplots(figsize=(13, 9), dpi=300)
 
     sns.scatterplot(
-        data=overlap_df, x='subaltern_tribal_density_10k', y='postural_contortion_density_10k',
+        data=overlap_df, x='subversive_mobility_score', y='somatic_contortion_score',
         hue='corpus_origin', palette={'GRETIL': '#4A154B', 'DCS': '#007A5A'},
-        size='total_words', sizes=(40, 450), alpha=0.7, edgecolor='black', linewidth=0.5, ax=ax
+        size='total_words', sizes=(40, 500), alpha=0.7, edgecolor='black', linewidth=0.5, ax=ax
     )
 
     top_outliers = overlap_df.assign(
-        score=overlap_df['subaltern_tribal_density_10k'] * overlap_df['postural_contortion_density_10k']
-    ).nlargest(7, 'score')
+        total_score=overlap_df['subversive_mobility_score'] * overlap_df['somatic_contortion_score']
+    ).nlargest(8, 'total_score')
 
     for idx, row in top_outliers.iterrows():
         clean_label = row['file_name'].replace('_u.htm', '').replace('.txt', '').replace('.conllu', '')
         ax.annotate(
-            clean_label, (row['subaltern_tribal_density_10k'], row['postural_contortion_density_10k']),
+            clean_label, (row['subversive_mobility_score'], row['somatic_contortion_score']),
             textcoords="offset points", xytext=(6, 6), ha='left', fontsize=8, fontweight='bold',
             bbox=dict(boxstyle="round,pad=0.2", fc="yellow", alpha=0.4, ec="gray", lw=0.5)
         )
 
-    ax.set_title("The Acro-Yoga Complex: Cross-Corpus Overlap Matrix", fontsize=12, fontweight='bold', pad=15)
+    ax.set_title("The Acro-Yoga Complex: Subversive Mobility vs. Somatic Contortion\n(Composite Density Profiles Aggregated Across GRETIL & DCS)", fontsize=11, fontweight='bold', pad=15)
+    ax.set_xlabel("Subversive Mobility Index (Caravan Transit + Espionage + Leaping Density)", fontsize=10)
+    ax.set_ylabel("Somatic Contortion Index (Postural + Pole Apparatus Density)", fontsize=10)
     plt.tight_layout()
     os.makedirs(VIS_DIR, exist_ok=True)
     plt.savefig(IMG_DESTINATION, bbox_inches='tight')
     plt.close()
-    print(f"[+] Multi-source academic scatter plot successfully rendered at: {IMG_DESTINATION}")
+    print(f"[+] Expanded multi-source academic scatter plot successfully rendered at: {IMG_DESTINATION}")
 
 if __name__ == "__main__":
     sync_dcs_nodes()
