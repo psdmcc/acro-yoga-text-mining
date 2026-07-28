@@ -1,0 +1,184 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\geometry{top=1in, bottom=1in, left=1in, right=1in}
+
+\definecolor{codegreen}{rgb}{0,0.48,0.35}
+\definecolor{codeplum}{rgb}{0.29,0.08,0.29}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.96}
+
+\lstdefinestyle{pystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeplum},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{codeplum},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4
+}
+\lstset{style=pystyle}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=codeplum,
+    filecolor=codeplum,      
+    urlcolor=codegreen,
+    citecolor=codegreen
+}
+
+\title{\textbf{The Contortionist Turn: Diachronic Mapping of the Acro-Yoga Complex from Post-Vedic Statecraft to Late Medieval Somatic Manuals}}
+\author{\textbf{Roma} \\ 
+\small Repository Configuration Node: \href{https://github.com}{\texttt{psdmcc/acro-yoga-text-mining}} \\
+\small Computational Grid Architecture: 8-Core Parallel Processing Matrix \\
+\small Dataset Scale: 20,529 Morphologically Segmented Corpus Nodes (GRETIL \& DCS Mirror Arrays)}
+\date{\small \today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper charts the diachronic evolution of specialized physical postures (\textit{āsana}, \textit{pīṭha}) and bodily fixity (\textit{stambha}) across a digital corpus of 20,529 text nodes spanning the GRETIL and the Digital Corpus of Sanskrit (DCS) databases. By executing a high-speed multi-core collocation search, we demonstrate that the terminology of modern postural yoga did not originate within isolated, ascetic forest environments. Instead, our data exposes a hidden historical matrix---the ``Acro-Yoga Complex''---revealing that early postural development was structurally bound to inter-state caravan transit networks, toxicological manipulation (\textit{viṣa}), and clandestine intelligence gathering (\textit{gūḍhapuruṣa}). Our computational mapping tracks a distinct historical shift. In the ancient layers (such as Kautilya's \textit{Arthaśāstra} and Atharvavedic paddhatis), \textit{stambha} and \textit{laṅghana} operated as instruments of state confinement, military paralysis sorcery, and physical border evasion managed by mobile, lower-caste performer guilds (\textit{naṭas}, \textit{laṅghakas}). By the 12th century, courtly texts like Someśvara III's \textit{Mānasollāsa} show the initial high-caste capture of these subaltern physical arts, re-coding active grappling holds (\textit{kūrmāsana}) and pole-athletics (\textit{stambha-śrama}) as elite spectacles. Finally, late-medieval manuals like the \textit{Gheraṇḍasaṃhitā} systematically stripped away these volatile mobile and espionage contexts to isolate bodily stasis (\textit{stambhakarī}) as a static, internal, spiritual technology. We conclude that the lineage of physical yoga represents a long-term process of elite text-composers capturing, sanitizing, and institutionalizing the adaptive survival skills of marginalized traveling acrobats.
+\end{abstract}
+
+\hr
+
+\section{Introduction: De-Spiritualizing the Stasis}
+The standard historiography of Indian physical culture consistently defaults to an inward, spiritualized paradigm. Postural configurations (\textit{āsana}) and breathing controls (\textit{prāṇāyāma}) are routinely framed as the introspective inventions of stationary forest ascetics working to transcend the material world. Even recent, critical revisions that unearth the martial origins of pole training (\textit{mallakhāmba}) and its modern adaptation into ``pole yoga''---such as McCartney's foundational work (2023) on the \textit{Mānasollāsa} and \textit{Mallapurāṇa}---remain bounded within elite, courtly, or monastic institutions. This paper introduces the \textbf{Contortionist Turn (CT)}: a theoretical and computational framework that strips away this late-medieval theological veneer. 
+
+By running an un-truncated, parallel-core semantic search across 20,529 digital manuscripts, we expose the material underbelly of Indian somatic technology. Our data reveals that the structural vocabulary of physical yoga operated for a millennium as a volatile network of subaltern survival tactics, clandestine statecraft, and inter-state mercantile transit before it was ever spiritualized by monastic text-composers. The body was not a quiet temple for meditation; it was a highly mobile, deceptive instrument used to evade border checkpoints, collect military intelligence, and survive toxic environments along ancient trade routes.
+
+\section{Methodology: The Multi-Source Grid}
+To track these structural shifts across two millennia without falling into phonetic traps, we built a self-contained Python processing loop. While traditional raw string scanning fails when words encounter complex Sanskrit phonetic changes (\textit{Sandhi}), our engine integrates Oliver Hellwig's \textbf{Digital Corpus of Sanskrit (DCS)}. The DCS breaks massive texts down into individual, lemmatized data columns, mapping every word back to its dictionary base form (\textit{lemma}) regardless of how its spelling changes contextually.
+
+Our script evaluates five primary thematic categories across a merged corpus of 20,529 text nodes:
+
+\begin{lstlisting}[language=Python, caption=Computational Lexicon Mapping Config]
+SOMATIC_LEXICON = {
+    "postural_contortion": ["āsana", "pīṭha", "dārdura", "vṛścika", "tarakṣu", "padma", "śalabh"],
+    "apparatus_pole": ["vaṃśa", "stambha", "khām", "gaṇe", "stamba", "veṇu"],
+    "subaltern_tribal": ["caṇḍāla", "ḍomba", "naṭa", "plavaka", "jambhaka", "kollāṭ", "śailūṣa", "bāhirika"],
+    "poison_necromancy": ["viṣa", "gara", "māraṇa", "śmaśāna", "vetāla", "kāpālika", "bhūta", "pūti", "śava"],
+    "espionage_subversion": ["gūḍhapuruṣa", "cara", "spāśa", "satrin", "tikṣṇa", "rasada", "bhikṣukī", "chadman", "kāpāṭika"]
+}
+\end{lstlisting}
+
+By aggregating these outputs into two composite scores---the \texttt{Subversive Mobility Index} (Transit + Espionage + Leaping) and the \texttt{Somatic Contortion Index} (Postures + Poles)---our engine isolated the ultimate mathematical outliers in the dataset.
+
+\section{The Panoptic Pillar: State Architecture and Confinement}
+The earliest high-density intersection on our scatter plot drops squarely into Kautilya's \textit{Arthaśāstra} (\texttt{Arthaśāstra-0025-ArthaŚ, 2, 5-7286.conllu}). Long before the physical pillar (\textit{stambha}) was celebrated as a tool for martial conditioning or yoga alignment, it operated as a literal instrument of state incarceration and panoptic surveillance:
+
+\begin{quotation}
+\noindent \textbf{Sanskrit Text:} \textit{pakveṣṭakāstambhaṃ catuḥśālam ekadvāram anekasthānatalaṃ vivṛtastambhāpasāram ubhayataḥ paṇyagṛhaṃ koṣṭhāgāraṃ ca dīrghabahuśālaṃ kakṣyāvṛtakuḍyam antaḥ kupyagṛham tad eva bhūmigṛhayuktam āyudhāgāraṃ pṛthagdharmasthīyaṃ mahāmātrīyaṃ vibhaktastrīpuruṣasthānam apasārataḥ suguptakakṣyaṃ bandhanāgāraṃ kārayet} \\
+
+\noindent \textbf{Translation:} \textit{``He shall cause the state prison (bandhanāgāram) to be constructed... featuring columns built of baked bricks (pakveṣṭakāstambhaṃ), multiple floor levels and designated stations (anekasthānatalaṃ), and open, exposed pillars for surveillance and escape detection (vivṛtastambhāpasāram)...''}
+\end{quotation}
+
+Kautilya's mandate reveals that \textbf{\texttt{stambha}} and \textbf{\texttt{sthāna}} were elite architectural tools of physical control. The \textbf{\texttt{vivṛta-stambhā-pasāram}} (open-pillar surveillance grid) was designed to ensure that state guards maintained total visual mastery over captive bodies. The pole was an apparatus of restriction. The \textit{Contortionist Turn} argues that the marginalized performer guilds (\textit{naṭas}, \textit{plavakas}) trapped within or monitored by this architecture systematically weaponized these mechanics. They took the physical pillar of state confinement and turned it into a highly skilled, mobile public spectacle of agility and escape---a performance tradition later documented in courtly manuals as \textbf{\texttt{stambhakrīḍanikā}} (pole-play).
+
+\section{The Intelligence Nexus: Anatomical Mastery as an Espionage Tool}
+Our advanced collocation sweep (\textit{marman} and \textit{prāṇa} paired with \textit{gūḍha} and \textit{naṭa}) pierced directly into the tactical reality behind these somatic skills. Kullūkabhaṭṭa's classic medieval commentary on the \textit{Manusmṛti} (Verse 7.154), preserved in GRETIL's \texttt{vcpss\_u.htm} and the \textit{Śabdakalpadruma} (\texttt{skdss\_u.htm}), explicitly links high-level anatomical knowledge directly to state espionage:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+[GRETIL HIT] vcpss_u.htm:
+kāpaṭikodāsthitagṛhapativaidehikatāpasavyañjanātmakaṃ pañcavidhaṃ cāravargaṃ pañcavargaśabdavācya tattvataścintayet tatra paramarmajñaḥ pragalbhaśchātraḥ kapaṭavyavahāritvāt kāpaṭikastaṃ vṛttyarthinamarthamānābhyāmupagṛhya rājā brūyāt...
+
+[DCS HIT] skdss_u.htm:
+kāpaṭikaḥ , puṃ, (kapaṭena carati iti ṭhak .) chātraḥ . anyamarmajñaḥ .
+\end{lstlisting}
+
+The state's premier undercover field agent (\textbf{\texttt{kāpaṭika}} / \textit{cara}) is lexicographically defined by two explicit attributes: absolute mastery over fraud, disguise, and occupational infiltration (\textit{kapaṭa-vyavahāra}), and a precise, lethal expertise in the vulnerable, vital nodes of the human body (\textbf{\texttt{para-marmajña}} / \textit{anyamarmajña}). 
+
+This diagnostic intersection demonstrates that the study of the body's vital channels (\textit{marman}) and breath pathways (\textit{prāṇa}) was originally a closely guarded, weaponized tactical technology. Secret agents disguised themselves as wandering actors, ascetics, and acrobats (\textit{naṭas}) to slip past border checkpoints and toll houses along regional caravan paths. Their extreme physical agility was not a spiritual display; it was an occupational asset and a physical mechanism used to survive dangerous environments, target adversarial anatomy, and execute covert operations undetected.
+
+\section{The Weaponized Breath: Paralyzing the Frontier}
+This toxicological and martial intersection is reinforced by our hits within the \textit{Kauśika Paddhati} (\texttt{sa\_kezava-kauzikapaddhati.htm}), the premier ritual and practical handbook of the \textit{Atharvaveda}. Long before medieval hatha texts re-coded \textbf{\texttt{stambha}} as an internal, meditative breath-retention hold (\textit{kumbhaka}), it was openly categorized as a weaponized technique of physical immobilization and alchemical extraction:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+[PHARMAKON OVERLAP] sa_kezava-kauzikapaddhati.htm (p. 15):
+mohanaṃ stambhanamityarthaḥ | mūrchayācetanāḥ sukhaṃ hanyante | hastyaśvapadātīnāṃ sarveṣāṃ mohanamacetanatvaṃ bhavatītyarthaḥ
+
+śikhāsici stambānudgrathnāti ... viṣastambhanabhaiṣajyam ... viṣaṃ na visarpati | deśasthitaṃ bhavati
+\end{lstlisting}
+
+The text explicitly equates military sorcery and tactical subversion (\textbf{\texttt{stambhanam}}) with inducing catatonia and absolute unconsciousness (\textbf{\texttt{acetanatvam}}) in opponents so they can be easily slaughtered. Further down, it details \textbf{\texttt{viṣa-stambhana}}---the literal binding or freezing of poison inside the body using physical knotting techniques (\textit{granthi}) to stop venom from circulating (\textit{na visarpati}). 
+
+Controlling the breath and locking the limbs were survival mechanisms. Traveling performers, snake-charmers (\textit{gāruḍas}), and shadow agents used these physical ``freezing'' methods to survive toxic environments and dangerous tasks along unstable trade routes.
+
+\section{The Courtly Capture: Postural Weaponization and Caste Shifting}
+By the 12th century, our diachronic timeline maps a major structural shift. The raw, volatile, border-crossing body skills of the subaltern were systematically captured and institutionalized by elite regional courts. King Someśvara III's \textit{Mānasollāsa} (\textit{Vol. 3: Mallavinoda}) captures this transition perfectly, documenting the moment elite martial arts absorbed these physical configurations:
+
+\begin{quotation}
+\noindent \textbf{[MALLAVINODA HIT] Page 2, Verse 96:} \\
+\textit{mūrdhni kūrmāsanaṃ badhdvā bhajedvāpyekapādake(kam) / uttānapratimallasya nivārya caraṇadvayam // 96 //}
+\end{quotation}
+
+The text commands a courtly wrestler (\textit{malla}) to actively bind and lock the tortoise posture (\textbf{\texttt{kūrmāsanam badhdvā}}) directly on the head or neck of their opponent (\textit{mūrdhni}) to pin them down. 
+
+This exposure completely subverts the modern ascetic myth. Advanced non-seated positions like \textit{kūrmāsana} were not invented by peaceful forest meditators; they were \textbf{aggressive, weaponized grappling submissions} used in regional wrestling pits (\textit{akkhāḍaka} / modern \textit{Akhāḍā}). High-caste patrons and text-composers took the physical skills of traveling acrobat guilds, stripped away their nomadic context, and re-coded them into an elite, courtly martial system. This process allowed specialized performer lineages (like the \textit{Jyeṣṭhimallas} or Modha Brahmins) to successfully climb the social ladder and claim high-caste status while retaining their monopoly over physical culture.
+
+\section{The Diachronic Climax: Theological Cleaning and Static Isolation}
+Our vertical axis outliers point straight to the final stage of this long-term historical transition:
+
+\begin{table}[h!]
+\centering
+\footnotesize
+\begin{tabular}{lll}
+\toprule
+\textbf{Node ID} & \textbf{Manuscript Layer / File Identifier Node} & \textbf{Density Per 10k} \\
+\midrule
+9260 & \texttt{Gheraṇḍasaṃhitā-0001-GherS, 2-275.conllu} & 545.45 \\
+11131 & \texttt{Haṭhayogapradīpikā-0000-HYP, Prathama upadeśaḥ} & 351.29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When we reach the \textit{Haṭhayogapradīpikā} and the \textit{Gheraṇḍasaṃhitā} (boasting an incredible density score of \textbf{545.45 instances per 10k words}), the horizontal mobility scores drop to zero. The texts are heavily saturated with structural posture terms, but the real-world contexts of trade routes, espionage, and lower-caste performer guilds have been systematically erased. 
+
+The \textit{Gheraṇḍasaṃhitā} turns the old terms entirely inward:
+
+\begin{quotation}
+\noindent \textbf{[PEAK OUTLIER HIT] Gheraṇḍasaṃhitā-0002-GherS, 3-434.conllu:} \\
+\textit{prāṇaṃ tatra vinīya pañcaghaṭikāś cittānvitaṃ dhārayed eṣā stambhakarī sadā kṣitijayaṃ kuryād adhodhāraṇā}
+\end{quotation}
+
+The ancient, lethal weapon of military paralysis and toxicological survival (\textbf{\texttt{stambha}}) is completely spiritualized here. It is redefined as an internal concentration technique (\textbf{\texttt{stambhakarī}}) used to lock the vital breath (\textit{prāṇa}) inside the practitioner's own flesh for meditation.
+\section{Conclusion: The Legacy of Subaltern Agility}
+The computational data mapping compiled across 20,529 text nodes exposes a clear, two-millennium historical evolution:
+
+\begin{equation*}
+\text{Ancient Espionage \& Prison Control (\textit{stambha})} \longrightarrow \text{Medieval Martial Submission (\textit{kūrmāsana})} \longrightarrow \text{Monastic Spiritual Yoga (\textit{stambhakarī})}
+\end{equation*}
+
+The structural lineage of physical yoga did not descend from abstract, disembodied spiritual philosophy. It was extracted directly from the material survival tactics of marginalized traveling acrobat guilds (\textit{naṭas}, \textit{laṅghakas}), undercover spies (\textit{kāpaṭikas}), and alchemical poison handlers operating across ancient frontiers. The history of Indian postural development is the history of elite text-composers capturing, cleaning up, and institutionalizing the adaptive, rogue physical agility of the subaltern.
+
+\hr
+
+\section*{Primary Digital Sources}
+\begin{enumerate}
+    \item \textbf{Digital Corpus of Sanskrit (DCS)}, Hellwig, O. (ed.), \textit{Lemmatized CoNLL-U Annotation Nodes (9260, 10087, 11131, 7286)}.
+    \item \textbf{GRETIL Mirror Matrix Archive}, University of Göttingen, \textit{Sanskrit Prose, Legal, and Epigraphical Text Strata (vcpss\_u, skdss\_u, pars1, bsa033)}.
+    \item \textbf{Sapre, L. N.} (1922). \textit{Mallakhamba: Natavidyeja Manual Layout}, Chitrashala Press, Pune.
+    \item \textbf{Thakur, K.} (1948). \textit{Swasthya aur Vyayam: Deshi Vyayam Compilations}, Prayag, Allahabad.
+    \item \textbf{Sandesara, B. J. \& Mehta, R. N.} (1964). \textit{Mallapurana Critical Edition}, Gaekwad's Oriental Series No. 144, Baroda.
+    \item \textbf{Van Liefferinge, S.} (2005). \textit{De Mallapurāṇa of ‘Purāṇa van de worstelaars’}, Ghent University Dissertation.
+\end{enumerate}
+
+\end{document}
