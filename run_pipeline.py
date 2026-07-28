@@ -1,14 +1,17 @@
 import os
 import re
 import subprocess
+import urllib.request
+import zipfile
 import pandas as pd
 from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 1. CORE CONFIGURATION
+# 1. ABSOLUTE PATH CONFIGURATION
 BASE_DIR = "/Users/croma/acro-yoga-text-mining"
-DATA_DIR = os.path.join(BASE_DIR, "corpus/raw_gretil")
+GRETIL_DIR = os.path.join(BASE_DIR, "corpus/raw_gretil")
+DCS_DIR = os.path.join(BASE_DIR, "corpus/raw_dcs")
 OUTPUT_DIR = os.path.join(BASE_DIR, "outputs/metrics")
 VIS_DIR = os.path.join(BASE_DIR, "outputs/visualizations")
 CSV_DESTINATION = os.path.join(OUTPUT_DIR, "gretil_somatic_density.csv")
@@ -22,32 +25,80 @@ SOMATIC_LEXICON = {
     "necromancy_mortuary": ["aṭṭhi", "dhovana", "śmaśāna", "pūti", "bhūta", "kāpālika"]
 }
 
-MASTER_PATTERNS = {}
-for category, words in SOMATIC_LEXICON.items():
-    MASTER_PATTERNS[category] = re.compile("|".join(words), re.IGNORECASE)
+MASTER_PATTERNS = {cat: re.compile("|".join(words), re.IGNORECASE) for cat, words in SOMATIC_LEXICON.items()}
 
+# 2. AUTOMATED DCS INGESTION (DYNAMIC STRING BUILDING TO PREVENT CLIPPING)
+def sync_dcs_nodes():
+    os.makedirs(DCS_DIR, exist_ok=True)
+    if len(os.listdir(DCS_DIR)) == 0:
+        print("[*] Downloading Oliver Hellwig's DCS data corpus...")
+        archive_path = os.path.join(BASE_DIR, "dcs_main.zip")
+        
+        link_domain = "https://github.com"
+        link_account = "OliverHellwig"
+        link_repo = "sanskrit"
+        link_suffix = "archive/refs/heads/master.zip"
+        dcs_url = f"{link_domain}/{link_account}/{link_repo}/{link_suffix}"
+        
+        try:
+            urllib.request.urlretrieve(dcs_url, archive_path)
+            print("[+] Download complete. Extracting CoNLL-U annotation rows...")
+            
+            with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                for member in zip_ref.namelist():
+                    if "/dcs/data/conllu/" in member and member.endswith(".conllu"):
+                        filename = os.path.basename(member)
+                        if filename:
+                            source = zip_ref.read(member)
+                            with open(os.path.join(DCS_DIR, filename), "wb") as f:
+                                f.write(source)
+            print("[+] DCS lemmatization nodes successfully cached local.")
+        except Exception as e:
+            print(f"[!] DCS download error: {e}")
+        finally:
+            if os.path.exists(archive_path):
+                os.remove(archive_path)
+    else:
+        print("[*] Verified local DCS data nodes. Skipping asset download loop.")
+
+# 3. FAST TEXT MINING AND PARSING ENGINE
 def clean_manuscript(text):
     cleaned = re.sub(r'<.*?>', '', text)
     if "THE TEXT:" in cleaned:
-        cleaned = cleaned.split("THE TEXT:", 1)[1]
+        cleaned = cleaned.split("THE TEXT:", 1)
     return cleaned
 
 def process_single_file(file_path):
     file_name = os.path.basename(file_path)
+    is_dcs = file_path.endswith('.conllu')
+    
     try:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             raw_data = f.read()
     except Exception:
         return None
+
+    if is_dcs:
+        lemmas = []
+        for line in raw_data.split('\n'):
+            if line.startswith('#') or not line.strip():
+                continue
+            parts = line.split('\t')
+            # Extract position index 2, which contains the string lemma form explicitly
+            if len(parts) > 2:
+                lemma_string = parts[2].strip()
+                if lemma_string:
+                    lemmas.append(lemma_string)
+        body_text = " ".join(lemmas)
+        total_tokens = len(lemmas)
+    else:
+        body_text = clean_manuscript(raw_data)
+        total_tokens = len(body_text.split())
         
-    body_text = clean_manuscript(raw_data)
-    total_tokens = len(body_text.split())
-    
     if total_tokens < 100:
         return None
         
-    file_row = {"file_name": file_name, "total_words": total_tokens}
-    
+    file_row = {"file_name": file_name, "corpus_origin": "DCS" if is_dcs else "GRETIL", "total_words": total_tokens}
     for category, pattern in MASTER_PATTERNS.items():
         occurrences = len(pattern.findall(body_text))
         file_row[f"{category}_raw_count"] = occurrences
@@ -55,93 +106,64 @@ def process_single_file(file_path):
         
     return file_row
 
-# 2. RUN PARALLEL DATA MINING
-def execute_text_mining():
-    print(f"[*] Launching fast processing grid using {cpu_count()} CPU cores...")
+def run_parallel_text_mining():
+    print(f"[*] Deploying text-mining array across {cpu_count()} CPU threads...")
     all_files = []
-    for root, dirs, files in os.walk(DATA_DIR):
-        for file in files:
-            if file.endswith(('.txt', '.htm', '.html')):
-                all_files.append(os.path.join(root, file))
-                
-    print(f"[*] Total files loaded into memory grid: {len(all_files)}")
+    for folder, ext in [(GRETIL_DIR, ('.txt', '.htm', '.html')), (DCS_DIR, ('.conllu',))]:
+        if os.path.exists(folder):
+            for root, _, files in os.walk(folder):
+                for f in files:
+                    if f.endswith(ext):
+                        all_files.append(os.path.join(root, f))
+                        
+    print(f"[*] Total files loaded into multi-core grid: {len(all_files)}")
     with Pool(processes=cpu_count()) as pool:
         results = pool.map(process_single_file, all_files)
         
-    matrix_output = [r for r in results if r is not None]
-    df = pd.DataFrame(matrix_output)
+    df = pd.DataFrame([r for r in results if r is not None])
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     df.to_csv(CSV_DESTINATION, index=False)
-    print(f"[+] Processing successful! Master sheet generated at: {CSV_DESTINATION}")
+    print(f"[+] Consolidated database table updated at: {CSV_DESTINATION}")
 
-# 3. GENERATE ACADEMIC SCATTER PLOT
+# 4. TWO-COLOR SCATTER GRAPH VISUALIZATION
 def generate_academic_plot():
     if not os.path.exists(CSV_DESTINATION):
         return
-
-    print("[*] Parsing textual analytics table to isolate density intersections...")
     df = pd.read_csv(CSV_DESTINATION)
     overlap_df = df[(df['subaltern_tribal_raw_count'] > 0) & (df['postural_contortion_raw_count'] > 0)]
-
     if overlap_df.empty:
-        print("[!] No overlapping hits identified yet across current regex constraints.")
+        print("[!] No active text overlaps identified for plot generation.")
         return
 
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-    fig, ax = plt.subplots(figsize=(11, 7), dpi=300)
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=300)
 
     sns.scatterplot(
         data=overlap_df, x='subaltern_tribal_density_10k', y='postural_contortion_density_10k',
-        size='total_words', sizes=(40, 400), alpha=0.6, color='#4A154B', edgecolor='black', linewidth=0.5, ax=ax
+        hue='corpus_origin', palette={'GRETIL': '#4A154B', 'DCS': '#007A5A'},
+        size='total_words', sizes=(40, 450), alpha=0.7, edgecolor='black', linewidth=0.5, ax=ax
     )
 
     top_outliers = overlap_df.assign(
         score=overlap_df['subaltern_tribal_density_10k'] * overlap_df['postural_contortion_density_10k']
-    ).nlargest(5, 'score')
+    ).nlargest(7, 'score')
 
     for idx, row in top_outliers.iterrows():
-        clean_label = row['file_name'].replace('_u.htm', '').replace('.txt', '')
+        clean_label = row['file_name'].replace('_u.htm', '').replace('.txt', '').replace('.conllu', '')
         ax.annotate(
             clean_label, (row['subaltern_tribal_density_10k'], row['postural_contortion_density_10k']),
-            textcoords="offset points", xytext=(5, 5), ha='left', fontsize=8, fontweight='bold',
-            bbox=dict(boxstyle="round,pad=0.2", fc="yellow", alpha=0.3, ec="gray", lw=0.5)
+            textcoords="offset points", xytext=(6, 6), ha='left', fontsize=8, fontweight='bold',
+            bbox=dict(boxstyle="round,pad=0.2", fc="yellow", alpha=0.4, ec="gray", lw=0.5)
         )
 
-    ax.set_title("The Acro-Yoga Complex: Subaltern-Postural Semantic Overlap Matrix\n(Normalized Density Per 10k Tokens Across GRETIL)", fontsize=12, fontweight='bold', pad=15)
-    ax.set_xlabel("Subaltern / Tribal Identity Vocabulary Density (Per 10k Words)", fontsize=10)
-    ax.set_ylabel("Postural / Contortionist Somatic Density (Per 10k Words)", fontsize=10)
-    
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[-3:], labels[-3:], title="Manuscript Word Count", loc="upper right", frameon=True)
-
+    ax.set_title("The Acro-Yoga Complex: Cross-Corpus Overlap Matrix", fontsize=12, fontweight='bold', pad=15)
     plt.tight_layout()
     os.makedirs(VIS_DIR, exist_ok=True)
     plt.savefig(IMG_DESTINATION, bbox_inches='tight')
     plt.close()
-    print(f"[+] Academic plot compiled and exported cleanly to: {IMG_DESTINATION}")
-
-# 4. SECURE CLOUD DEPLOYMENT
-def deploy_to_github():
-    print("[*] Initializing automated Git deployment...")
-    os.chdir(BASE_DIR)
-    
-    subprocess.run(["git", "remote", "remove", "origin"], capture_output=True)
-    subprocess.run(["git", "remote", "add", "origin", "https://github.com"], check=True)
-    
-    try:
-        subprocess.run(["git", "add", "run_pipeline.py", CSV_DESTINATION, IMG_DESTINATION], check=True)
-        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if not status.stdout.strip():
-            print("    [!] Cloud architecture is completely synchronized.")
-            return
-
-        subprocess.run(["git", "commit", "-m", "Automated update: fast single-pass text mining and visualization"], check=True)
-        subprocess.run(["git", "push", "-u", "origin", "main"], check=True)
-        print("[+] Pipeline completely updated on your online repository profile!")
-    except subprocess.CalledProcessError as e:
-        print(f"[!] Git upload block encountered: {e}")
+    print(f"[+] Multi-source academic scatter plot successfully rendered at: {IMG_DESTINATION}")
 
 if __name__ == "__main__":
-    execute_text_mining()
+    sync_dcs_nodes()
+    run_parallel_text_mining()
     generate_academic_plot()
-    deploy_to_github()
