@@ -1,0 +1,15 @@
+# Block raw text database components
+corpus/
+DCS-mirror/
+GRETIL-mirror/
+
+# Block large scratchpad formats and binary blobs
+*.pdf
+*.rtf
+*.txt
+*.htm
+*.html
+
+# Block environment cache models
+__pycache__/
+.DS_Store
