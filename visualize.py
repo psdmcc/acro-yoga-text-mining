@@ -1,78 +1,137 @@
+#!/usr/bin/env python3
+"""
+Somatic Text Mining - Graph Physics Visualization Engine
+Author: Patrick S. D. McCartney
+Description: Generates an interactive force-directed physics layout mapping 
+             the topological cluster distances between subaltern alchemical, 
+             toxicological, and Maurya/Patristic espionage nodes.
+"""
+
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import json
+import networkx as nx
+from pyvis.network import Network
 
-# File definitions matching your absolute workspace paths
-CSV_PATH = "/Users/croma/acro-yoga-text-mining/outputs/metrics/gretil_somatic_density.csv"
-IMG_PATH = "/Users/croma/acro-yoga-text-mining/outputs/visualizations/somatic_overlap_matrix.png"
+def build_somatic_network():
+    # 1. Initialize NetworkX Directed Graph Container
+    G = nx.DiGraph()
 
-def generate_academic_plot():
-    if not os.path.exists(CSV_PATH):
-        print(f"[!] Target metrics spreadsheet missing at: {CSV_PATH}")
-        return
+    # 2. Define Node Thematic Clusters and Attributions
+    nodes_metadata = {
+        # --- SUBALTERN ALCHEMICAL & TOXICOLOGICAL NODES ---
+        "viṣa": {"group": "toxicology", "label": "viṣa (Sanskrit Poison Payload)", "size": 35},
+        "viṣa-stambhana": {"group": "toxicology", "label": "viṣa-stambhana (Venom Freezing)", "size": 30},
+        "rasāyana": {"group": "alchemy", "label": "rasāyana (Alchemical Immortality)", "size": 25},
+        "bindu": {"group": "alchemy", "label": "bindu (Vital Humoral Fluid)", "size": 25},
+        "cāri-candra": {"group": "alchemy", "label": "cāri candra (Four Moons Matrix)", "size": 25},
+        "sapera": {"group": "subaltern", "label": "sapera (Nomadic Snake-Handlers)", "size": 20},
+        "ḍomba": {"group": "subaltern", "label": "ḍomba (Peripatetic Acrobat Guilds)", "size": 20},
+        
+        # --- MAURYA CLANDESTINE STATECRAFT NODES ---
+        "jambhakavidyā": {"group": "statecraft", "label": "jambhakavidyā (Metabolic Freezing)", "size": 35},
+        "aṅgavidyā": {"group": "statecraft", "label": "aṅgavidyā (Lethal Anatomy Grid)", "size": 28},
+        "gūḍhapuruṣa": {"group": "statecraft", "label": "gūḍhapuruṣa (Clandestine Field Agents)", "size": 30},
+        "sattrin": {"group": "statecraft", "label": "sattrin (Stationary Covert Undercovers)", "size": 28},
+        "bandhanāgāra": {"group": "statecraft", "label": "bandhanāgāra (Panoptic Prison Hub)", "size": 25},
+        
+        # --- CROSS-CORPUS PATRISTIC TRANSCULTURAL NODES ---
+        "ios": {"group": "patristic", "label": "ios (ἰός; Hellenistic Venom/Corrosion)", "size": 40},
+        "echidna": {"group": "patristic", "label": "echidna (Temple Snake-Priestess)", "size": 22},
+        "chrīō": {"group": "patristic", "label": "chrīō (Sacramental Enclosure Coating)", "size": 25}
+    }
 
-    print("[*] Parsing textual analytics table to isolate density intersections...")
-    df = pd.read_csv(CSV_PATH)
+    for node, meta in nodes_metadata.items():
+        G.add_node(node, **meta)
 
-    # Filter out baseline noise: isolate texts with active overlap
-    overlap_df = df[(df['subaltern_tribal_raw_count'] > 0) & (df['postural_contortion_raw_count'] > 0)]
+    # 3. Establish Causal Directed Edges (Extraction & Capture Trajectories)
+    edges = [
+        # Subaltern extraction pipeline straight to Maurya Statecraft
+        ("sapera", "viṣa-stambhana"),
+        ("viṣa-stambhana", "viṣa"),
+        ("viṣa", "jambhakavidyā"),
+        ("ḍomba", "jambhakavidyā"),
+        ("jambhakavidyā", "gūḍhapuruṣa"),
+        ("aṅgavidyā", "gūḍhapuruṣa"),
+        ("gūḍhapuruṣa", "sattrin"),
+        ("sattrin", "bandhanāgāra"),
+        
+        # Alchemical internalizations tracking Debnath/Lorenzen/Mallinson nodes
+        ("rasāyana", "bindu"),
+        ("cāri-candra", "bindu"),
+        ("bindu", "viṣa-stambhana"),
+        
+        # Transcultural Patristic corporate capture trajectory
+        ("echidna", "ios"),
+        ("ios", "chrīō"),
+        ("jambhakavidyā", "ios")  # The structural cross-corpus bottleneck bridge
+    ]
+    G.add_edges_from(edges)
 
-    if overlap_df.empty:
-        print("[!] No overlapping hits identified yet across current regex constraints.")
-        return
+    # 4. Compute High-Fidelity Topological Metrics
+    print("[*] Computing Brandes betweenness centrality and PageRank metrics...")
+    betweenness = nx.betweenness_centrality(G, normalized=True)
+    pagerank = nx.pagerank(G)
 
-    # Set up clean, academic formatting styles
-    plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-    fig, ax = plt.subplots(figsize=(11, 7), dpi=300)
+    # Inject calculations back into node attributes for visualization rendering
+    for node in G.nodes():
+        G.nodes[node]['title'] = (
+            f"<b>{G.nodes[node]['label']}</b><br>"
+            f"Betweenness Centrality: {betweenness[node]:.4f}<br>"
+            f"PageRank Score: {pagerank[node]:.4f}"
+        )
+        # Dynamically scale node sizing based on bridging power (betweenness)
+        G.nodes[node]['size'] = G.nodes[node]['size'] + (betweenness[node] * 60)
 
-    # Plot the texts as data points
-    sns.scatterplot(
-        data=overlap_df,
-        x='subaltern_tribal_density_10k',
-        y='postural_contortion_density_10k',
-        size='total_words',
-        sizes=(40, 400),
-        alpha=0.6,
-        color='#4A154B', # Deep academic plum accent
-        edgecolor='black',
-        linewidth=0.5,
-        ax=ax
-    )
+    # 5. Initialize and Calibrate PyVis Interactive HTML Graphics Dashboard
+    print("[*] Calibrating force-directed graph physics parameters...")
+    net = Network(height="800px", width="100%", bgcolor="#1a1a1a", font_color="#ffffff", directed=True)
+    
+    # Map colors based on distinct historical/methodological clusters
+    color_map = {
+        "toxicology": "#e74c3c",  # Deep Red
+        "alchemy": "#9b59b6",     # Royal Purple
+        "subaltern": "#f1c40f",   # Nomad Yellow
+        "statecraft": "#3498db",  # Clandestine Blue
+        "patristic": "#2ecc71"    # Hellenistic Green
+    }
 
-    # Dynamic labelling: identify the top 5 outlier "smoking guns" text titles
-    top_outliers = overlap_df.assign(
-        combined_score=overlap_df['subaltern_tribal_density_10k'] * overlap_df['postural_contortion_density_10k']
-    ).nlargest(5, 'combined_score')
-
-    for idx, row in top_outliers.iterrows():
-        # Clean up file names for visual presentation (e.g., truncate long handles)
-        clean_label = row['file_name'].replace('_u.htm', '').replace('.txt', '')
-        ax.annotate(
-            clean_label,
-            (row['subaltern_tribal_density_10k'], row['postural_contortion_density_10k']),
-            textcoords="offset points",
-            xytext=(5, 5),
-            ha='left',
-            fontsize=8,
-            fontweight='bold',
-            bbox=dict(boxstyle="round,pad=0.2", fc="yellow", alpha=0.3, ec="gray", lw=0.5)
+    for node, attrs in G.nodes(data=True):
+        net.add_node(
+            node, 
+            label=node, 
+            title=attrs['title'], 
+            size=attrs['size'], 
+            color=color_map[attrs['group']]
         )
 
-    # Layout designations
-    ax.set_title("The Acro-Yoga Complex: Subaltern-Postural Semantic Overlap Matrix\n(Normalized Density Per 10k Tokens Across GRETIL)", fontsize=12, fontweight='bold', pad=15)
-    ax.set_xlabel("Subaltern / Tribal Identity Vocabulary Density (Per 10k Words)", fontsize=10)
-    ax.set_ylabel("Postural / Contortionist Somatic Density (Per 10k Words)", fontsize=10)
-    
-    # Legend formatting
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[-3:], labels[-3:], title="Manuscript Word Count", loc="upper right", frameon=True)
+    for source, target in G.edges():
+        net.add_edge(source, target, color="#aaaaaa", arrowStrikethrough=False)
 
-    plt.tight_layout()
-    os.makedirs(os.path.dirname(IMG_PATH), exist_ok=True)
-    plt.savefig(IMG_PATH, bbox_inches='tight')
-    plt.close()
-    print(f"[+] Academic plot compiled and exported cleanly to: {IMG_PATH}")
+    # Configure Barnes-Hut simulation layout options to lock cluster distances perfectly
+    net.set_options("""
+    var options = {
+      "physics": {
+        "barnesHut": {
+          "gravitationalConstant": -12000,
+          "centralGravity": 0.2,
+          "springLength": 180,
+          "springConstant": 0.04,
+          "damping": 0.85,
+          "avoidOverlap": 0.8
+        },
+        "minVelocity": 0.75
+      },
+      "interaction": {
+        "hover": true,
+        "navigationButtons": true,
+        "tooltipDelay": 150
+      }
+    }
+    """)
+
+    output_html = "somatic_network.html"
+    net.save_graph(output_html)
+    print(f"[+] Success! Interactive network compiled and saved natively to: {output_html}")
 
 if __name__ == "__main__":
-    generate_academic_plot()
+    build_somatic_network()
