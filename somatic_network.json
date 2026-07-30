@@ -669,7 +669,18 @@
     "subaltern_tribal": [
         "sopāka",
         "syamīka",
-        "grāmaṇī"
+        "grāmaṇī",
+        "pulkaśa",
+        "āndhra",
+        "śumbha",
+        "khasa",
+        "māgadha",
+        "kṣatta",
+        "mūlavikrētā",
+        "pulkasī",
+        "niṣāda",
+        "vaiṇa",
+        "antyāvasāyin"
     ],
     "poison_necromancy": [
         "asita",
@@ -693,5 +704,53 @@
         "porneia",
         "daimon",
         "theurgy"
+    ],
+    "postural_contortion": [
+        "saṃkocita",
+        "vikucita",
+        "āhita",
+        "dhṛtam",
+        "vikalāṅga",
+        "kharva",
+        "vāmana",
+        "prajñu",
+        "ūrdhvajñu",
+        "saṃjñu",
+        "kubja",
+        "kuṇi",
+        "paṅgu",
+        "muṇḍa",
+        "tundila",
+        "māṃsala",
+        "durbala",
+        "avaṭīṭa",
+        "avanāṭa",
+        "avabhraṭa"
+    ],
+    "apparatus_pole": [
+        "mallakhamb"
+    ],
+    "espionage_subversion": [
+        "cāṇūra",
+        "muṣṭika",
+        "kuvalayāpīḍa"
+    ],
+    "epic_grappling_tactics": [
+        "āsphoṭa",
+        "gajadanta",
+        "gajayuddha",
+        "bāhuvighaṭṭita",
+        "kakṣābandha",
+        "urohasta",
+        "tṛṇpīḍa",
+        "pūrṇakumbha",
+        "pūrṇayoga",
+        "pṛṣṭhabhaṅga",
+        "bāhuniḥsṛta"
+    ],
+    "indo_persian_vernacular": [
+        "gā’o pachāṛ",
+        "ghoṛā pachāṛ",
+        "āhū pachāṛ"
     ]
 }
