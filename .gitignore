@@ -13,3 +13,4 @@ GRETIL-mirror/
 # Block environment cache models
 __pycache__/
 .DS_Store
+filename_or_folder
