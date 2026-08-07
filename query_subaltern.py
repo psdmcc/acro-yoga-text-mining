@@ -1,85 +1,92 @@
 import os
-import re
+import csv
 
-dcs_dir = "corpus/raw_dcs"
-print("[*] Initializing parallel core Contortionist Turn (CT) lemma sweep...")
-# Expanded target cluster specifically optimized for Chapter 4's spatial parameters
-VEDIC_VILLAGE_GRID = {
-    "frontier_infrastructure": [
-        "sārthavāha", "naṭa", "laṅghaka", "cara", "akhāḍā", "akkāḍaka", 
-        "gūḍhapuruṣa", "yuddha", "kūrmāsana", "niṣpipeṣa"
-    ],
-    "punitive_purity": [
-        "trapu", "gautamadharmasūtra", "cheda", "bheda", "ekajāti", 
-        "dvijāti", "taptataila", "manusmṛti", "strīśudraadhika"
-    ],
-    "spatial_ideology": [
-        "naigama", "yogakṣema", "bhāva", "vastuvṛtta", "viparyāsa", 
-        "niścaya", "manuṣyadevānām"
-    ]
-}
+TARGET_DIRECTORIES = ["corpus/raw_dcs", "corpus/raw_gretil"]
+print("[*] Initializing dedicated CoNLL-U Sanskrit Lemma sweep...")
 
-
-# Full computational lexicon grid from Listing 2 of the paper
 SOMATIC_LEXICON = {
-    "postural_contortion": [
-        "āsana", "īṭpha", "ādrdura", "ṛśvcika", "ṣtaraku", "padma", "śalabh"
-    ],
-    "apparatus_pole": [
-        "ṃśvaa", "stambha", "ākhm", "ṇgae", "stamba", "ṇveu"
-    ],
-    "subaltern_tribal": [
-        "ṇḍācala", "ḍomba", "ṭnaa", "plavaka", "jambhaka", "āṭkoll", 
-        "śūṣaila", "ābhirika"
-    ],
-    "poison_necromancy": [
-        "ṣvia", "gara", "āṇmraa", "śśāmana", "āvetla", "āākplika", 
-        "ūbhta", "ūpti", "śava", "ios", "virus"
-    ],
-    "espionage_subversion": [
-        "ūḍṣghapurua", "cara", "āśspa", "satrin", "ṣṇtika", "rasada", 
-        "ṣībhikuk", "chadman", "āāṭkpika", "mattō", "malattō", "chriō"
-    ]
+    "postural_contortion": ["āsana", "padma", "śalabha", "vṛścika", "kūrmāsana"],
+    "apparatus_pole": ["stambha", "stambhanena", "stambhaiḥ", "stambhitavya", "stambhakrīḍa", "rajjuyāyin", "vaṃśanartin"],
+    "subaltern_tribal": ["caṇḍāla", "ḍomba", "plavaka", "jambhaka", "śabara", "kirāta", "pulinda", "pīṭhasarpin", "ābhirika"],
+    "street_tumblers_performers": ["kalāyana", "jhampāka", "jhampāru", "plavitṛ", "praṇālī", "pānila", "kācapātra", "śailūṣa", "kaṭakhādaka", "kelaka", "bharata", "kevala", "cakradhāra", "cakrin", "naṭa", "laṅghaka"],
+    "sorcery_necromancy_expropriation": ["indrajālin", "māyākāra", "indrajālika", "abhicāravid", "mantrin", "māyāvin", "māntrika", "indrajālajña", "bṛsaya", "siddhanara", "durnarendra", "piśācavidyā", "pretasiddhi", "bhūtavidyā", "śmaśānamantrajapana", "bhautikavidyā", "śava", "gara"],
+    "espionage_subversion": ["gūḍhapuruṣa", "cara", "satrin", "rasada", "chadman", "yogin", "sārthavāha"]
 }
 
-# Automated multi-threaded regex engine compiles patterns seamlessly
-compiled_patterns = {}
-for cluster, terms in SOMATIC_LEXICON.items():
-    escaped_terms = [re.escape(term) for term in terms]
-    pattern_string = r"\b(" + "|".join(escaped_terms) + r")\w*"
-    compiled_patterns[cluster] = re.compile(pattern_string, re.IGNORECASE)
+# Flatten unique target tracking array
+all_terms = sorted(list(set(t.lower().strip() for terms in SOMATIC_LEXICON.values() for t in terms)), key=len, reverse=True)
+lemma_counts = {term: 0 for term in all_terms}
 
-# Baseline target indicators
-domba_pattern = re.compile(r'\b(domba|ḍomba|dumb|domb|donb)\w*', re.IGNORECASE)
-jambhaka_pattern = re.compile(r'\b(jambhaka|jambh|zambhaka)\w*', re.IGNORECASE)
+found_count = 0
+file_count = 0
+extracted_rows = []
 
-if not os.path.exists(dcs_dir):
-    print(f"[!] Target CoNLL-U node directory not found at: {dcs_dir}")
-else:
-    found_count = 0
-    # Your processing and scoring loops execute concurrently...
-
-
-    for f in os.listdir(dcs_dir):
-        if f.endswith('.conllu'):
-            file_path = os.path.join(dcs_dir, f)
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
-                content = file.read()
+for directory in TARGET_DIRECTORIES:
+    if not os.path.exists(directory):
+        print(f"[!] Warning: Path '{directory}' not found locally. Skipping...")
+        continue
+        
+    print(f"[*] Sweeping repository: {directory}")
+    for root_dir, _, files in os.walk(directory):
+        for f in files:
+            if f.startswith('.') or not f.endswith('.conllu'):
+                continue
+                
+            file_path = os.path.join(root_dir, f)
+            file_count += 1
             
-            # Split by CoNLL-U standard paragraph boundaries
-            blocks = content.split("\n\n")
-            for block in blocks:
-                if domba_pattern.search(block) or jambhaka_pattern.search(block):
-                    text_line = None
-                    # Search specifically for the raw reconstructed text line metadata hook
-                    for line in block.split("\n"):
-                        if line.startswith("# text ="):
-                            text_line = line.replace("# text =", "").strip()
-                            break
-                    
-                    if text_line:
-                        found_count += 1
-                        print(f"\n[NODE TARGET HIT #{found_count}] Found in file: {f}")
-                        print(f"Sanskrit Text: {text_line}")
+            if file_count % 100 == 0:
+                print(f"    [ Processing CoNLL-U asset #{file_count}: {f} ]")
+                
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="replace") as file:
+                    for line in file:
+                        cleaned_line = line.strip()
+                        # Skip blank lines and structural header comments
+                        if not cleaned_line or cleaned_line.startswith('#'):
+                            continue
                         
-    print(f"\n[+] Deep-text extraction sweep finalized. Total matches isolated: {found_count}")
+                        columns = cleaned_line.split('\t')
+                        # CoNLL-U standard maps the explicit base Lemma string to index position 2
+                        if len(columns) >= 3:
+                            token_lemma = columns[2].lower().strip()
+                            
+                            for term in all_terms:
+                                # Target exact match or compound occurrences cleanly
+                                if term == token_lemma or term in token_lemma:
+                                    found_count += 1
+                                    lemma_counts[term] += 1
+                                    
+                                    extracted_rows.append({
+                                        "Hit_Number": found_count,
+                                        "File": f,
+                                        "Lemma": term,
+                                        "Sanskrit_Context": f"Token: {columns[1]} | Lemma: {columns[2]}",
+                                        "Raw_Entry": cleaned_line[:100]
+                                    })
+            except Exception as e:
+                print(f"[!] Error processing file {f}: {e}")
+                continue
+
+print(f"\n[+] CoNLL-U sweep completed. Total files parsed: {file_count}")
+print(f"[+] Total accurate matches isolated: {found_count}")
+
+# Save clean structured data straight onto disk
+os.makedirs("outputs", exist_ok=True)
+output_file = "outputs/real_corpus_hits.csv"
+with open(output_file, "w", encoding="utf-8", newline="") as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=["Hit_Number", "File", "Lemma", "Sanskrit_Context", "Raw_Entry"])
+    writer.writeheader()
+    writer.writerows(extracted_rows)
+    
+print("\n" + "="*50)
+print(f"[✓] SUCCESS: Unified multi-corpus data logged directly to: {output_file}")
+print("="*50)
+print("\n[✓] UNIFIED REAL LEMMA DISTRIBUTION SUMMARY (DCS + GRETIL):")
+
+# Correct tuple value sorting targeting element index [1] (the numeric count)
+sorted_summary = sorted(lemma_counts.items(), key=lambda item: item[1], reverse=True)
+for lemma, count in sorted_summary:
+    if count > 0:
+        print(f"    - {lemma}: {count} occurrences")
+print("="*50 + "\n")

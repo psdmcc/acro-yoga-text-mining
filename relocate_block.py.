@@ -1,0 +1,32 @@
+def shift_text_block(src_name, dest_name, start_idx, end_idx, target_idx):
+    """
+    Safely relocates a block of text lines (1-indexed, inclusive) 
+    and inserts them directly at the target line index.
+    """
+    with open(src_name, 'r', encoding='utf-8') as src_file:
+        doc_lines = src_file.readlines()
+    
+    # Extract the block (converting 1-based index to 0-based array index)
+    extracted_chunk = doc_lines[start_idx - 1 : end_idx]
+    
+    # Drop the original block out of the main index matrix
+    del doc_lines[start_idx - 1 : end_idx]
+    
+    # Recalculate target index if the deletion occurred upstream
+    new_insertion_point = target_idx
+    if target_idx > start_idx:
+        if target_idx <= end_idx:
+            new_insertion_point = start_idx
+        else:
+            new_insertion_point -= len(extracted_chunk)
+            
+    # Inject text segment cleanly into the adjusted position
+    doc_lines[new_insertion_point - 1 : new_insertion_point - 1] = extracted_chunk
+    
+    with open(dest_name, 'w', encoding='utf-8') as dest_file:
+        dest_file.writelines(doc_lines)
+    print(f"Successfully relocated lines {start_idx}-{end_idx} to line {target_idx}.")
+
+if __name__ == '__main__':
+    # Configured specifically for your main_article_v6.tex coordinates
+    shift_text_block('main_article_v6.tex', 'main_article_v6_modified.tex', 405, 463, 273)

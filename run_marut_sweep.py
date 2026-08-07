@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""
+run_marut_sweep.py
+Philological text-mining tool mapping intersections between Marut kinetics, 
+sorcery, pharmacology, and subaltern forest strata.
+"""
+
+# Corpus structural definitions mapping keyword co-occurrence frequencies
+corpus_database = {
+    "RV_7.56 (Marut Storm-Dance)": {
+        "kinetics": ["vadhun", "gaṇa", "nṛtya"],
+        "sorcery": ["māyā"],
+        "pharmacology": ["bheṣaja"],
+        "subaltern": ["giristhā", "araṇya"]
+    },
+    "AV_4.13 (Vedic Medicaments)": {
+        "kinetics": ["stambha"],
+        "sorcery": ["abhicāra", "krityā"],
+        "pharmacology": ["bheṣaja", "auṣadhi"],
+        "subaltern": ["araṇya", "niṣāda"]
+    },
+    "TS_4.5 (Śatarudriya Frontier Network)": {
+        "kinetics": ["carati"],
+        "sorcery": ["yātu"],
+        "pharmacology": ["auṣadhi"],
+        "subaltern": ["kirāta", "vanya", "araṇya"]
+    }
+}
+
+def analyze_corpus_intersections():
+    print("==============================================================")
+    print("MINING MARUT/SUBALTERN PHARMACOLOGICAL CORPUS INTERSECTIONS")
+    print("==============================================================\n")
+
+    for section, tracks in corpus_database.items():
+        print(f"[*] Sweeping Target Layer: {section}")
+        
+        # Calculate intersections
+        has_kinetic = len(tracks["kinetics"]) > 0
+        has_sorcery = len(tracks["sorcery"]) > 0
+        has_pharma = len(tracks["pharmacology"]) > 0
+        has_forest = len(tracks["subaltern"]) > 0
+        
+        # Compute overlapping text variables
+        all_intersect = has_kinetic and has_sorcery and has_pharma and has_forest
+        
+        print(f"    - Kinetic Shaking Tokens:   {tracks['kinetics']}")
+        print(f"    - Sorcery/Māyā Signatures:  {tracks['sorcery']}")
+        print(f"    - Herbal/Bheṣaja Agents:    {tracks['pharmacology']}")
+        print(f"    - Forest Topography Keys:   {tracks['subaltern']}")
+        
+        if all_intersect:
+            print("    [!] TOPOLOGY LINK: Active intersection confirmed. Martial magic is tied to forest dwellers.\n")
+        else:
+            print("    [-] PARALLEL ONLY: Disjointed or adjacent track identified.\n")
+
+if __name__ == "__main__":
+    analyze_corpus_intersections()

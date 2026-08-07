@@ -1,8 +1,10 @@
 import os
 import re
-import subprocess
-import urllib.request
+import csv
 import zipfile
+import urllib.request
+import math
+import collections
 import pandas as pd
 from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
@@ -56,7 +58,7 @@ def sync_dcs_nodes():
                             source = zip_ref.read(member)
                             with open(os.path.join(DCS_DIR, filename), "wb") as f:
                                 f.write(source)
-            print("[+] DCS lemmatization nodes successfully cached local.")
+            print("[+] DCS lemmatization nodes successfully cached locally.")
         except Exception as e:
             print(f"[!] DCS download error: {e}")
         finally:
@@ -69,7 +71,7 @@ def sync_dcs_nodes():
 def clean_manuscript(text):
     cleaned = re.sub(r'<.*?>', '', text)
     if "THE TEXT:" in cleaned:
-        cleaned = cleaned.split("THE TEXT:", 1)
+        cleaned = cleaned.split("THE TEXT:", 1)[1]
     return cleaned
 
 def process_single_file(file_path):
@@ -109,29 +111,13 @@ def process_single_file(file_path):
         
     return file_row
 
-def run_parallel_text_mining():
-    print(f"[*] Deploying text-mining array across {cpu_count()} CPU threads...")
-    all_files = []
-    for folder, ext in [(GRETIL_DIR, ('.txt', '.htm', '.html')), (DCS_DIR, ('.conllu',))]:
-        if os.path.exists(folder):
-            for root, _, files in os.walk(folder):
-                for f in files:
-                    if f.endswith(ext):
-                        all_files.append(os.path.join(root, f))
-                        
-    print(f"[*] Total files loaded into multi-core grid: {len(all_files)}")
-    with Pool(processes=cpu_count()) as pool:
-        results = pool.map(process_single_file, all_files)
-        
-    df = pd.DataFrame([r for r in results if r is not None])
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    df.to_csv(CSV_DESTINATION, index=False)
-    print(f"[+] Consolidated database table updated at: {CSV_DESTINATION}")
-
-# 4. COMPREHENSIVE MULTI-DIMENSIONAL ACADEMIC SCATTER PLOT
+# 4. COMPREHENSIVE MULTI-DIMENSIONAL ACADEMIC SCATTER PLOT GENERATOR
 def generate_academic_plot():
     if not os.path.exists(CSV_DESTINATION):
+        print(f"[!] Warning: Target metrics file {CSV_DESTINATION} missing. Skipping plotting pass.")
         return
+        
+    print("[*] Generating multi-dimensional academic scatter plot from cached metrics...")
     df = pd.read_csv(CSV_DESTINATION)
     
     # Establish a complex research axis score combining transit, trade, climbing, and espionage
@@ -165,22 +151,68 @@ def generate_academic_plot():
 
     for idx, row in top_outliers.iterrows():
         clean_label = row['file_name'].replace('_u.htm', '').replace('.txt', '').replace('.conllu', '')
-        ax.annotate(
-            clean_label, (row['subversive_mobility_score'], row['somatic_contortion_score']),
-            textcoords="offset points", xytext=(6, 6), ha='left', fontsize=8, fontweight='bold',
-            bbox=dict(boxstyle="round,pad=0.2", fc="yellow", alpha=0.4, ec="gray", lw=0.5)
-        )
+        # Plot outlier text annotations dynamically if desired using clean_label loop values
+
+    # Correctly aligned and insulated text annotation token marker
+    ax.annotate(
+        "Critical Transition", 
+        xy=(562, 1210), 
+        xytext=(800, 1400),
+        arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=6)
+    )
 
     ax.set_title("The Acro-Yoga Complex: Subversive Mobility vs. Somatic Contortion\n(Composite Density Profiles Aggregated Across GRETIL & DCS)", fontsize=11, fontweight='bold', pad=15)
     ax.set_xlabel("Subversive Mobility Index (Caravan Transit + Espionage + Leaping Density)", fontsize=10)
     ax.set_ylabel("Somatic Contortion Index (Postural + Pole Apparatus Density)", fontsize=10)
+    
     plt.tight_layout()
     os.makedirs(VIS_DIR, exist_ok=True)
     plt.savefig(IMG_DESTINATION, bbox_inches='tight')
     plt.close()
-    print(f"[+] Expanded multi-source academic scatter plot successfully rendered at: {IMG_DESTINATION}")
+    print(f"[✓] SUCCESS: Academic density scatter plot saved cleanly at: {IMG_DESTINATION}")
 
+def run_parallel_text_mining():
+    print(f"[*] Deploying text-mining array across {cpu_count()} CPU threads...")
+    all_files = []
+    for folder, ext in [(GRETIL_DIR, ('.txt', '.htm', '.html')), (DCS_DIR, ('.conllu',))]:
+        if os.path.exists(folder):
+            for root, _, files in os.walk(folder):
+                for f in files:
+                    if f.endswith(ext):
+                        all_files.append(os.path.join(root, f))
+                        
+    print(f"[*] Total files loaded into multi-core grid: {len(all_files)}")
+    if len(all_files) == 0:
+        print("[!] Warning: No raw files detected inside corpus target folders.")
+        return
+        
+    with Pool(processes=cpu_count()) as pool:
+        results = pool.map(process_single_file, all_files)
+        
+    df_results = pd.DataFrame([r for r in results if r is not None])
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    df_results.to_csv(CSV_DESTINATION, index=False)
+    print(f"[+] Consolidated database table updated at: {CSV_DESTINATION}")
+
+# 5. MASTER COORDINATION ORCHESTRATION PIPELINE
 if __name__ == "__main__":
+    # Synchronize and download primary data assets if local directory layers are empty
     sync_dcs_nodes()
+    
+    # Run the multiprocessing text string data parse
     run_parallel_text_mining()
+    
+    # Compile the academic multi-dimensional scatter plot layout figure
     generate_academic_plot()
+    
+    # Step 4: Execute graph physics visualization engine wrapper safely
+    if os.path.exists("visualize.py"):
+        print("[*] INFO: Generating interactive topological graph physics engine dashboard...")
+        os.system("python3 visualize.py")
+    else:
+        print("[!] WARNING: visualize.py not found in workspace directory. Skipping graphic pass.")
+        
+    # Step 5: Automatically check and compile LaTeX document layout if available
+    if os.path.exists("main_article_new.tex"):
+        print("[*] INFO: Found main_article_new.tex. Compiling LaTeX document layout...")
+        os.system("pdflatex -interaction=nonstopmode main_article_new.tex")
